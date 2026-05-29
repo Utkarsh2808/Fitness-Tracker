@@ -24,7 +24,7 @@ interface AuthState {
   initialize: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
-  loginWithGoogle: (code: string) => Promise<void>;
+  loginWithGoogle: (code: string, redirectUri?: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -105,13 +105,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  loginWithGoogle: async (code) => {
+  loginWithGoogle: async (code, redirectUri) => {
     set({ isLoading: true, error: null });
     try {
       const res = await fetch(`${API_BASE}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, redirect_uri: redirectUri }),
       });
       const data = await res.json();
 

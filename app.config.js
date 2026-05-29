@@ -7,7 +7,7 @@ module.exports = {
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
-    scheme: 'progresstracker',
+    scheme: 'com.googleusercontent.apps.846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76',
     userInterfaceStyle: 'dark',
     splash: {
       image: './assets/splash.png',
@@ -53,8 +53,9 @@ module.exports = {
       typedRoutes: true,
     },
     extra: {
-      googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID || '',
-      googleRedirectUri: process.env.GOOGLE_REDIRECT_URI || '',
+      googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID || '846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76.apps.googleusercontent.com',
+      googleRedirectUriWeb: process.env.GOOGLE_REDIRECT_URI_WEB || 'http://localhost:8081/auth/google/callback',
+      googleRedirectUriMobile: process.env.GOOGLE_REDIRECT_URI_MOBILE || 'com.googleusercontent.apps.846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76:/oauth2redirect',
       apiBaseUrl: process.env.API_BASE_URL || 'http://127.0.0.1:3001/api',
       eas: {
         projectId: 'b4e79789-48bc-4050-9285-c1608e0beef3',

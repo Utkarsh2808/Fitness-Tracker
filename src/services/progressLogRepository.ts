@@ -1,10 +1,11 @@
 /**
- * Progress Log Repository - Immutable append-only log for progress tracking
+ * Progress Log Repository - Data access layer for progress tracking
+ * Uses MongoDB via backend API
  */
 
 import { v4 as uuidv4 } from 'uuid';
 import { ProgressLog } from '@/types';
-import { executeQuery, executeQueryFirst, executeMutation } from '@/lib/database';
+import { progressLogsApi } from './mongoApi';
 
 export const progressLogRepository = {
   /**

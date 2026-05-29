@@ -9,11 +9,10 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
-import { initDatabase } from '@/lib/database';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { useSettingsStore } from '@/stores/progressStore';
 import { useAuthStore } from '@/stores/authStore';
 import { initSync } from '@/services/syncService';
-import RootNavigator from '@/navigation/RootNavigator';
 import LoginScreen from '@/screens/LoginScreen';
 import SignupScreen from '@/screens/SignupScreen';
 
@@ -26,13 +25,12 @@ export default function App() {
   const [authScreen, setAuthScreen] = useState<'login' | 'signup'>('login');
   const { darkMode } = useSettingsStore();
   const { isAuthenticated, isLoading: authLoading, initialize: initAuth } = useAuthStore();
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Initialize database
-        await initDatabase();
-
         // Initialize auth state
         await initAuth();
 
@@ -56,6 +54,18 @@ export default function App() {
     initializeApp();
   }, []);
 
+  // Handle navigation based on authentication state
+  useEffect(() => {
+    if (!isReady || authLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (isAuthenticated && inAuthGroup) {
+      // Redirect to main app if authenticated but on auth screen
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, segments, isReady, authLoading]);
+
   if (!isReady) {
     return null;
   }
@@ -73,7 +83,7 @@ export default function App() {
           )
         ) : (
           <>
-            <RootNavigator />
+            <Slot />
             <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} />
           </>
         )}

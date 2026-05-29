@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Auth</title>
+    <script>
+        // Extract the authorization code from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        
+        if (error) {
+            window.opener?.postMessage({ type: 'google-auth-error', error }, '*');
+            window.close();
+        } else if (code) {
+            // Send code back to parent window
+            window.opener?.postMessage({ type: 'google-auth-success', code }, '*');
+            window.close();
+        }
+    </script>
+</head>
+<body>
+    <p>Processing Google Sign In...</p>
+</body>
+</html>

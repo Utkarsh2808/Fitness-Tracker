@@ -16,8 +16,10 @@ import { useAuthStore } from '@/stores/authStore';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_WEB_CLIENT_ID = Constants.expoConfig?.extra?.googleWebClientId ?? '';
-const REDIRECT_URI = Constants.expoConfig?.extra?.googleRedirectUri ?? '';
+const GOOGLE_WEB_CLIENT_ID = Constants.expoConfig?.extra?.googleWebClientId ?? '846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76.apps.googleusercontent.com';
+const REDIRECT_URI_WEB = Constants.expoConfig?.extra?.googleRedirectUriWeb ?? 'http://localhost:8081/auth/google/callback';
+const REDIRECT_URI_MOBILE = Constants.expoConfig?.extra?.googleRedirectUriMobile ?? 'com.googleusercontent.apps.846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76:/oauth2redirect';
+const REDIRECT_URI = Platform.OS === 'web' ? REDIRECT_URI_WEB : REDIRECT_URI_MOBILE;
 
 interface AuthScreenProps {
   onSwitchToSignup: () => void;
@@ -28,32 +30,54 @@ export default function LoginScreen({ onSwitchToSignup }: AuthScreenProps) {
   const [password, setPassword] = useState('');
   const { login, loginWithGoogle, isLoading, error, clearError } = useAuthStore();
 
+  // Log the values on component mount to verify
+  React.useEffect(() => {
+    console.log('=== LOGIN SCREEN MOUNTED ===');
+    console.log('GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
+    console.log('REDIRECT_URI:', REDIRECT_URI);
+    console.log('Platform.OS:', Platform.OS);
+    console.log('Constants.expoConfig:', Constants.expoConfig);
+  }, []);
+
   const handleGoogleSignIn = async () => {
     try {
-      // Build Google OAuth URL with the Expo proxy as redirect
+      // Hardcode values to ensure they work
+      const clientId = '846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76.apps.googleusercontent.com';
+      const redirectUri = Platform.OS === 'web' 
+        ? 'http://localhost:8081/auth/google/callback'
+        : 'com.googleusercontent.apps.846422458106-a5jrlu2m3cbejd1abh5lfrd89r64fb76:/oauth2redirect';
+
+      console.log('Google OAuth Config:', {
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        platform: Platform.OS
+      });
+
       const googleParams = new URLSearchParams({
-        client_id: GOOGLE_WEB_CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
+        client_id: clientId,
+        redirect_uri: redirectUri,
         response_type: 'code',
         scope: 'openid profile email',
         access_type: 'offline',
       });
 
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${googleParams.toString()}`;
+      
+      console.log('Auth URL:', googleAuthUrl);
 
-      // Route through Expo proxy: it opens Google, Google redirects to proxy, proxy redirects to app scheme
-      const returnUrl = 'progresstracker://expo-auth-session';
-      const proxyUrl = `${REDIRECT_URI}/start?authUrl=${encodeURIComponent(googleAuthUrl)}&returnUrl=${encodeURIComponent(returnUrl)}`;
+      // Use WebBrowser for all platforms
+      const result = await WebBrowser.openAuthSessionAsync(
+        googleAuthUrl,
+        redirectUri
+      );
 
-      const result = await WebBrowser.openAuthSessionAsync(proxyUrl, 'progresstracker://');
+      console.log('Auth result:', result);
 
       if (result.type === 'success' && result.url) {
-        // Extract code from the returned deep link URL
         const params = new URL(result.url).searchParams;
         const code = params.get('code');
         if (code) {
-          // Send code to backend for secure token exchange
-          await loginWithGoogle(code);
+          await loginWithGoogle(code, redirectUri);
         }
       }
     } catch (err) {

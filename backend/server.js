@@ -138,10 +138,13 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
 // Google OAuth - exchange code for token and create/login user
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, redirect_uri } = req.body;
     if (!code) {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
+
+    // Use the redirect_uri from request, or fallback to env variable
+    const redirectUri = redirect_uri || process.env.GOOGLE_REDIRECT_URI_WEB || GOOGLE_REDIRECT_URI;
 
     // Exchange authorization code for access token on the server
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -151,7 +154,7 @@ app.post('/api/auth/google', async (req, res) => {
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
         code,
-        redirect_uri: GOOGLE_REDIRECT_URI,
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }).toString(),
     });

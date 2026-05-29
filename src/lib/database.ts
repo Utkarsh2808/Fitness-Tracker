@@ -3,18 +3,27 @@
  * Uses Expo SQLite for offline-first data persistence
  */
 
-import * as SQLite from 'expo-sqlite';
 import { Platform } from 'react-native';
+
+let SQLite: any = null;
+if (Platform.OS !== 'web') {
+  SQLite = require('expo-sqlite');
+}
 
 const DB_NAME = 'progress-tracker.db';
 const DB_VERSION = 1;
 
-let db: SQLite.SQLiteDatabase | null = null;
+let db: any | null = null;
 
 /**
  * Initialize the database connection
  */
-export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
+export const initDatabase = async (): Promise<any> => {
+  if (Platform.OS === 'web') {
+    console.warn('SQLite is not supported on web. Running in online-only mode.');
+    return null as any;
+  }
+
   if (db) {
     return db;
   }
@@ -34,7 +43,10 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
 /**
  * Get database instance
  */
-export const getDatabase = (): SQLite.SQLiteDatabase => {
+export const getDatabase = (): any => {
+  if (Platform.OS === 'web') {
+    return null as any;
+  }
   if (!db) {
     throw new Error('Database not initialized. Call initDatabase() first.');
   }
@@ -44,7 +56,7 @@ export const getDatabase = (): SQLite.SQLiteDatabase => {
 /**
  * Create all necessary tables
  */
-const createTables = async (database: SQLite.SQLiteDatabase): Promise<void> => {
+const createTables = async (database: any): Promise<void> => {
   const createTablesSQL = `
     -- Projects table
     CREATE TABLE IF NOT EXISTS projects (

@@ -1,10 +1,11 @@
 /**
  * Daily Entry Repository - Aggregated daily progress data
+ * Uses MongoDB via backend API
  */
 
 import { v4 as uuidv4 } from 'uuid';
 import { DailyEntry } from '@/types';
-import { executeQuery, executeQueryFirst, executeMutation } from '@/lib/database';
+import { dailyEntriesApi } from './mongoApi';
 
 export const dailyEntryRepository = {
   /**

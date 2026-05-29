@@ -10,9 +10,8 @@ import { getAuthToken } from '@/stores/authStore';
 
 // Auto-detect the dev server IP (same machine runs both Expo and backend)
 function getApiBaseUrl(): string {
-  // Using adb reverse, the phone can reach localhost:3001 directly
-  // This is more reliable than WiFi IP which may be blocked by firewall
-  return 'http://127.0.0.1:3001/api';
+  // Use localhost which works on web, iOS simulator, and Android with adb reverse
+  return 'http://localhost:3001/api';
 }
 
 const API_BASE_URL = getApiBaseUrl();
